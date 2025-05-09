@@ -1,0 +1,1 @@
+"""FundingPips Trade Detector Core Package Module"""

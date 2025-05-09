@@ -1,0 +1,3 @@
+mode: "A"  # Mode A: Copy allowed between accounts of the same user
+input_file: "data/trades.csv"  # Path to the input trade data file
+output_dir: "reports/"  # Directory to save reports

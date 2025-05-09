@@ -1,0 +1,1 @@
+"""Defines Trades Models"""

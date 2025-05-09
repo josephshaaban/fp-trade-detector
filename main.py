@@ -1,0 +1,1 @@
+"""FundingPips Trade Detector Entery Point Module"""
