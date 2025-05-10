@@ -1,3 +1,9 @@
-mode: "A"  # Mode A: Copy allowed between accounts of the same user
-input_file: "data/trades.csv"  # Path to the input trade data file
+mode: "A"   # Mode A: Copy allowed between accounts of the same user
+# mode: "B"  # Mode B: Copy NOT Allowed between accounts held by the same user
+
 output_dir: "reports/"  # Directory to save reports
+
+# The data source configs for the trades
+data_source:
+  type: csv  # sqlite
+  path: ./data/trades.csv
