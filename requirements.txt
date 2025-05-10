@@ -1,2 +1,5 @@
 pandas
 pyyaml
+
+#development
+faker
