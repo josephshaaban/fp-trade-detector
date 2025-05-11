@@ -9,9 +9,13 @@ from trades.loaders.csv_loader import CSVTradeLoader
 from trades.loaders.sqlite_loader import SQLiteTradeLoader
 from trades.loaders.base_trade_loader import BaseTradeLoader
 
-def get_loader(config: AppConfig) -> BaseTradeLoader:
-    path = Path(config.data_source.path)
-    loader_type = config.data_source.type.lower()
+def get_loader(config: AppConfig, dataset: str) -> BaseTradeLoader:
+    if dataset not in config.data_sources:
+        raise KeyError(f"No data source config found for dataset: {dataset}")
+    
+    ds_config = config.data_sources[dataset]
+    path = Path(ds_config.path)
+    loader_type = ds_config.type.lower()
 
     if loader_type == "csv":
         return CSVTradeLoader(path)

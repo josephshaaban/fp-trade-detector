@@ -2,7 +2,7 @@
 
 import os
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Dict
 import yaml
 import logging.config
 
@@ -14,8 +14,8 @@ class DataSourceConfig(BaseModel):
 
 class AppConfig(BaseModel):
     mode: Literal['A', 'B']
-    output_dir: str = "reports/"
-    data_source: DataSourceConfig
+    output_dir: str
+    data_sources: Dict[str, DataSourceConfig]
 
 
 def load_config(path: str = "config/default.yaml") -> AppConfig:

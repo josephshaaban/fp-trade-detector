@@ -4,6 +4,10 @@ mode: "A"   # Mode A: Copy allowed between accounts of the same user
 output_dir: "reports/"  # Directory to save reports
 
 # The data source configs for the trades
-data_source:
-  type: csv  # sqlite
-  path: ./data/trades.csv
+data_sources:
+  trades:
+    type: csv   # or sqlite
+    path: ./data/test_task_trades_short.csv
+  accounts:
+    type: csv
+    path: ./data/test_task_accounts.csv

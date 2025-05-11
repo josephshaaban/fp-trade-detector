@@ -12,9 +12,12 @@ config = load_config()
 
 logger.info(f"Running in Mode {config.mode}")
 logger.info(f"Output will be saved to: {config.output_dir}")
-logger.debug(f"Data source: {config.data_source.type} @ {config.data_source.path}")
 
-loader = get_loader(config)
+trades_loader = get_loader(config, "trades")
+accounts_loader = get_loader(config, "accounts")
 
-df = loader.load()
-logger.info(f"Trade DataFrame loaded with shape: {df.shape}")
+df_trades = trades_loader.load()
+logger.info(f"Trade DataFrame loaded with shape: {df_trades.shape}")
+
+df_accounts = accounts_loader.load()
+logger.info(f"Account DataFrame loaded with shape: {df_accounts.shape}")
