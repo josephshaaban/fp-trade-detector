@@ -1,7 +1,7 @@
 """FundingPips Trade Detector Entery Point Module"""
 
 from core.config import load_config, setup_logging
-from trades.loader import TradeLoader
+from trades.loaders.loader_factory import get_loader
 import logging
 
 
@@ -14,7 +14,7 @@ logger.info(f"Running in Mode {config.mode}")
 logger.info(f"Output will be saved to: {config.output_dir}")
 logger.debug(f"Data source: {config.data_source.type} @ {config.data_source.path}")
 
-loader = TradeLoader(config)
+loader = get_loader(config)
 
-df = loader.load_trades()
+df = loader.load()
 logger.info(f"Trade DataFrame loaded with shape: {df.shape}")
