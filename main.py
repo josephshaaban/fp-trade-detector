@@ -58,6 +58,7 @@ def main():
 
     # Print some data of matched trades
     logger.info(f"Matched trades DataFrame shape: {df_matches.shape}")
+    logger.info(f"Categories found: {df_matches["category"].unique().tolist()}")
     print(df_matches.head())
 
 

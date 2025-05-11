@@ -9,6 +9,7 @@ class ModeBStrategy(MatchStrategy):
         self.mode = "B"
         self.add_postprocessor(self.add_violation_flag)
 
+    @staticmethod
     def add_violation_flag(df: pd.DataFrame) -> pd.DataFrame:
         df["is_violation"] = df["category"].isin(["copy", "reverse", "partial"])
         return df
