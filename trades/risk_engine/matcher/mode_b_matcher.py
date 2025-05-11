@@ -14,8 +14,8 @@ class ModeBStrategy(MatchStrategy):
         df["is_violation"] = df["category"].isin(["copy", "reverse", "partial"])
         return df
     
-    def match(self) -> pd.DataFrame:
-        df = self.trades.copy()
+    def _match(self) -> None:
+        df = self.matched.copy()
         merged = df.merge(
             df,
             on="symbol",
@@ -30,4 +30,4 @@ class ModeBStrategy(MatchStrategy):
         # Filter out same-user matches
         merged = merged[merged["user_id_a"] != merged["user_id_b"]]
 
-        return self._prepare_matches(merged)
+        self.matched = merged.copy()

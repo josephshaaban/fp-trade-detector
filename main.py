@@ -54,7 +54,7 @@ def main():
     # Run matching
     strategy = get_strategy(mode, df_trades, df_accounts)
     logger.debug(f"Using strategy: {strategy.__class__.__name__}")
-    df_matches = strategy.match()
+    df_matches = strategy.execute()
 
     # Print some data of matched trades
     logger.info(f"Matched trades DataFrame shape: {df_matches.shape}")

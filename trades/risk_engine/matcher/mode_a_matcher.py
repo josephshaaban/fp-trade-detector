@@ -1,5 +1,5 @@
 import pandas as pd
-from .base_matcher import MatchStrategy
+from trades.risk_engine.matcher.base_matcher import MatchStrategy
 
 
 class ModeAStrategy(MatchStrategy):
@@ -7,9 +7,9 @@ class ModeAStrategy(MatchStrategy):
         super().__init__(trades, accounts)
         self.name = "Mode A"
         self.mode = "A"
-    
-    def match(self) -> pd.DataFrame:
-        df = self.trades.copy()
+
+    def _match(self) -> None:
+        df = self.matched.copy()
         merged = df.merge(
             df,
             on="symbol",
@@ -17,4 +17,5 @@ class ModeAStrategy(MatchStrategy):
         )
         # Drop self-joins
         merged = merged[merged["identifier_a"] < merged["identifier_b"]]
-        return self._prepare_matches(merged)
+
+        self.matched = merged.copy()
