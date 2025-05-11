@@ -2,9 +2,7 @@
 
 from core import load_config, setup_logging
 from trades.loaders.loader_factory import get_loader
-from helpers import join_user_id_to_trades
-from trades.models import Trade, Account
-from trades.matcher import match_trades
+from trades.risk_engine.matcher import get_strategy
 import logging
 
 
@@ -53,15 +51,14 @@ def main():
     df_accounts = accounts_loader.load()
     logger.info(f"Account DataFrame loaded with shape: {df_accounts.shape}")
 
-    # Build user map for Mode B
-    df_trades = join_user_id_to_trades(df_trades, df_accounts)
+    # Run matching
+    strategy = get_strategy(mode, df_trades, df_accounts)
+    logger.debug(f"Using strategy: {strategy.__class__.__name__}")
+    df_matches = strategy.match()
 
-    # TODO: Run matching
-    # matches = match_trades(trades, mode=mode, account_to_user=account_user_map)
-    # logger.info(f"Found {len(matches)} matches")
-
-    # Print the first 5 rows of df_trades
-    print(df_trades.head())
+    # Print some data of matched trades
+    logger.info(f"Matched trades DataFrame shape: {df_matches.shape}")
+    print(df_matches.head())
 
 
 if __name__ == "__main__":

@@ -15,4 +15,6 @@ def categorize_match(df: pd.DataFrame) -> pd.Series:
     ]
     choices = ["partial", "copy", "reverse"]
 
-    return np.select(conditions, choices)
+    default_value = "unmatched"
+
+    return np.select(conditions, choices, default=default_value)
