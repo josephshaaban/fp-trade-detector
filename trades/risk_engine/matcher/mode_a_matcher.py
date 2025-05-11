@@ -3,6 +3,10 @@ from .base_matcher import MatchStrategy
 
 
 class ModeAStrategy(MatchStrategy):
+    def __init__(self, trades: pd.DataFrame, accounts: pd.DataFrame):
+        super().__init__(trades, accounts)
+        self.mode = "A"
+    
     def match(self) -> pd.DataFrame:
         df = self.trades.copy()
         merged = df.merge(
