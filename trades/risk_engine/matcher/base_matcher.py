@@ -8,7 +8,9 @@ class MatchStrategy(ABC):
         self.trades = trades
         self.accounts = accounts
         self.account_to_user = accounts.set_index("login")["user_id"]
+        self.name = "Base"
         self.mode = None
+        self.postprocessors = []
 
     @abstractmethod
     def match(self) -> pd.DataFrame:
@@ -27,9 +29,11 @@ class MatchStrategy(ABC):
         # Categorize matches
         df["category"] = categorize_match(df)
 
-        # Violation flag: only applicable in Mode B
-        if self.mode == "B":
-            df["is_violation"] = False
-            df["is_violation"] = df["category"].isin(["copy", "reverse", "partial"])
+        # Apply postprocessors
+        for processor in self.postprocessors:
+            df = processor(df)
 
         return df
+    
+    def add_postprocessor(self, processor: callable) -> None:
+        self.postprocessors.append(processor)
