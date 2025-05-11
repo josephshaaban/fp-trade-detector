@@ -2,23 +2,48 @@
 
 from core import load_config, setup_logging
 from trades.loaders.loader_factory import get_loader
+from helpers import build_account_user_map
+from trades.models import Trade, Account
+from trades.matcher import match_trades
 import logging
 
 
 setup_logging()
 logger = logging.getLogger("main")
 
-config = load_config()
 
-logger.info(f"Running in Mode {config.mode}")
-logger.info(f"Output will be saved to: {config.output_dir}")
+def main():
+    config = load_config()
+    mode = config.mode
 
-# Load trades data
-trades_loader = get_loader(config, "trades")
-df_trades = trades_loader.load()
-logger.info(f"Trade DataFrame loaded with shape: {df_trades.shape}")
+    logger.info(f"Running in Mode {config.mode}")
+    logger.info(f"Output will be saved to: {config.output_dir}")
 
-# Load accounts data
-accounts_loader = get_loader(config, "accounts")
-df_accounts = accounts_loader.load()
-logger.info(f"Account DataFrame loaded with shape: {df_accounts.shape}")
+    # Load trades data
+    trades_loader = get_loader(config, "trades")
+    df_trades = trades_loader.load()
+    logger.info(f"Trade DataFrame loaded with shape: {df_trades.shape}")
+
+    # Load accounts data
+    accounts_loader = get_loader(config, "accounts")
+    df_accounts = accounts_loader.load()
+    logger.info(f"Account DataFrame loaded with shape: {df_accounts.shape}")
+
+    # Convert to models
+    trades = [Trade(**row._asdict() if hasattr(row, '_asdict') else row.to_dict()) for _, row in df_trades.iterrows()]
+    accounts = [Account(**row._asdict() if hasattr(row, '_asdict') else row.to_dict()) for _, row in df_accounts.iterrows()]
+
+    # Build user map for Mode B
+    account_user_map = build_account_user_map(accounts)
+
+    # Run matching
+    matches = match_trades(trades, mode=mode, account_to_user=account_user_map)
+    logger.info(f"Found {len(matches)} matches")
+
+    for match in matches[:10]:  # preview first 10
+        logger.info(
+            f"[{match.category.upper()}] {match.trade_a.identifier} <-> {match.trade_b.identifier} | dt={match.time_diff_seconds:.2f}s | Violation={match.is_violation}")
+
+
+if __name__ == "__main__":
+    main()

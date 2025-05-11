@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pathlib import Path
 import logging
@@ -21,6 +22,8 @@ class CSVTradeLoader(BaseLoader):
             self.path,
             parse_dates=self.parse_dates
         )
+        # handle missing values with None
+        df = df.replace({np.nan: None})
 
         logger.debug(f"Loaded {len(df)} records from {self.path.name}")
         return df
