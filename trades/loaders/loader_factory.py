@@ -7,9 +7,9 @@ from core.config import AppConfig
 from pathlib import Path
 from trades.loaders.csv_loader import CSVTradeLoader
 from trades.loaders.sqlite_loader import SQLiteTradeLoader
-from trades.loaders.base_trade_loader import BaseTradeLoader
+from trades.loaders.base_trade_loader import BaseLoader
 
-def get_loader(config: AppConfig, dataset: str) -> BaseTradeLoader:
+def get_loader(config: AppConfig, dataset: str) -> BaseLoader:
     if dataset not in config.data_sources:
         raise KeyError(f"No data source config found for dataset: {dataset}")
     
@@ -18,7 +18,7 @@ def get_loader(config: AppConfig, dataset: str) -> BaseTradeLoader:
     loader_type = ds_config.type.lower()
 
     if loader_type == "csv":
-        return CSVTradeLoader(path)
+        return CSVTradeLoader(path, parse_dates=ds_config.parse_dates)
     elif loader_type == "sqlite":
         return SQLiteTradeLoader(path)
     else:

@@ -2,7 +2,7 @@
 
 import os
 from pydantic import BaseModel, Field
-from typing import Literal, Dict
+from typing import Literal, Dict, Optional, List
 import yaml
 import logging.config
 
@@ -10,6 +10,7 @@ import logging.config
 class DataSourceConfig(BaseModel):
     type: Literal['csv', 'sqlite']
     path: str
+    parse_dates: Optional[List[str]] = []
 
 
 class AppConfig(BaseModel):

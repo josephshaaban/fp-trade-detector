@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 from pathlib import Path
 
-class BaseTradeLoader(ABC):
+class BaseLoader(ABC):
     def __init__(self, path: Path):
         self.path = path
 
