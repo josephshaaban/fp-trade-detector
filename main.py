@@ -12,6 +12,30 @@ setup_logging()
 logger = logging.getLogger("main")
 
 
+def discover_datasets(df_trades, df_accounts):
+    from data.discover_data import discover_dataframe
+    from pprint import pprint
+    # accounts
+    account_report = discover_dataframe(
+        df_accounts,
+        name="Accounts",
+        key_columns=["login", "user_id"],
+        numeric_columns=[],
+        categorical_columns=["platform", "phase", "account_size"]
+    )
+    pprint(account_report)
+
+    # trades
+    trade_report = discover_dataframe(
+        df_trades,
+        name="Trades",
+        key_columns=["identifier", "trading_account_login"],
+        numeric_columns=["lot_size", "commission", "open_price", "close_price"],
+        categorical_columns=["symbol", "platform"]
+    )
+    pprint(trade_report)
+
+
 def main():
     config = load_config()
     mode = config.mode
