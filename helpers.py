@@ -1,3 +1,4 @@
+import pandas as pd
 from trades.models import Trade, Account
 import logging
 
@@ -11,6 +12,19 @@ def trade_direction(trade: Trade) -> str:
 
 def build_account_user_map(accounts: list[Account]) -> dict[int, int]:
     return {acc.login: acc.user_id for acc in accounts}
+
+
+def join_user_id_to_trades(trades: pd.DataFrame, accounts: pd.DataFrame):
+    """
+    Join user_id to trades based on trading_account_login.
+
+    This is a vectorized operation that maps the user_id from the
+    accounts DataFrame
+    instead of using a dict map like `build_account_user_map()`.
+    """
+    account_user_map = accounts.set_index("login")["user_id"]
+    trades["user_id"] = trades["trading_account_login"].map(account_user_map)
+    return trades
 
 
 def time_it(func):
