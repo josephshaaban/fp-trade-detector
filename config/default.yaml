@@ -8,7 +8,7 @@ output_dir: "reports/"  # Directory to save reports
 data_sources:
   trades:
     type: csv   # or sqlite
-    path: ./data/test_task_trades.csv
+    path: ./data/test_task_trades_short.csv
     parse_dates: ["opened_at", "closed_at"]
   accounts:
     type: csv

@@ -82,25 +82,6 @@ def main():
         col for col in df_matches.columns if col not in [
             "trading_account_login_a", "trading_account_login_b"]]
     print(df_matches[columns_to_display].head())
-    # print(df_matches.head())
-
-    # ============================= Test Code =============================
-    # Run matching
-    # strategy_a = get_strategy("A", df_trades, df_accounts).execute()
-    # strategy_b = get_strategy("B", df_trades, df_accounts).execute()
-
-    # # Compare column names
-    # columns_a = set(strategy_a.columns)
-    # columns_b = set(strategy_b.columns)
-
-    # only_in_a = columns_a - columns_b
-    # only_in_b = columns_b - columns_a
-
-    # logger.info(f"Columns only in strategy_a: {only_in_a}")
-    # logger.info(f"Columns only in strategy_b: {only_in_b}")
-
-    # print("Columns only in strategy_a:", only_in_a)
-    # print("Columns only in strategy_b:", only_in_b)
 
     import pandas as pd
     import numpy as np
