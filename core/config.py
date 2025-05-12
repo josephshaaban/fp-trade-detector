@@ -15,6 +15,10 @@ class DataSourceConfig(BaseModel):
 
 class AppConfig(BaseModel):
     mode: Literal['A', 'B']
+    dt_window: int = Field(
+        default=300,
+        description="Time window in seconds for matching trades"
+        )
     output_dir: str
     data_sources: Dict[str, DataSourceConfig]
 

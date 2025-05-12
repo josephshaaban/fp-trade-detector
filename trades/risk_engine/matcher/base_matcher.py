@@ -37,13 +37,6 @@ class MatchStrategy(ABC):
     def _prepare_matches(self) -> None:
         df = self.matched.copy()
 
-        # Ensure time diff is within 5 minutes
-        df["time_diff"] = (df["opened_at_b"] - df["opened_at_a"]).dt.total_seconds().abs()
-        df = df[df["time_diff"] <= 300]
-
-        # Remove same-account matches
-        df = df[df["trading_account_login_a"] != df["trading_account_login_b"]]
-
         # Categorize matches
         df["category"] = categorize_match(df)
 

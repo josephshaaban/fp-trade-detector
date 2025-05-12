@@ -1,5 +1,6 @@
 mode: "A"   # Mode A: Copy allowed between accounts of the same user
 # mode: "B"  # Mode B: Copy NOT Allowed between accounts held by the same user
+dt_window: 300  # Time window in seconds
 
 output_dir: "reports/"  # Directory to save reports
 
