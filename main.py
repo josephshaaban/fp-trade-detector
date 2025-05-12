@@ -4,8 +4,8 @@ from core import load_config, setup_logging
 from trades.loaders.loader_factory import get_loader
 from trades.risk_engine.matcher import get_strategy
 import logging
-from collections import Counter
-from pathlib import Path
+
+from trades.repoort import generate_pair_report
 
 
 setup_logging()
@@ -102,22 +102,6 @@ def main():
     # print("Columns only in strategy_a:", only_in_a)
     # print("Columns only in strategy_b:", only_in_b)
 
-    # login_a = 100724725
-    # login_b = 10426406
-
-    # pair_counts = Counter(zip(df_matches["trading_account_login_a"], df_matches["trading_account_login_b"]))
-    # max_pair = max(pair_counts, key=pair_counts.get)
-    # login_a, login_b = max_pair
-    # report_df = strategy.generate_account_pair_report(login_a, login_b, df_matches)
-    # print(report_df.to_markdown(index=False))
-
-    # markdown_output = report_df.to_markdown(index=False)
-    # out_dir = Path(config.output_dir)
-    # output_file_path = out_dir / f"report_{login_a}_{login_b}.md"
-    # with open(output_file_path, "w", encoding="utf-8") as f:
-    #     f.write(markdown_output)
-    # print(f"Report saved to {output_file_path}")
-
     import pandas as pd
     import numpy as np
     # Combine both sides
@@ -148,6 +132,14 @@ def main():
     top_count = pair_counts.max()
 
     print(f"Most matched pair: {top_pair} with {top_count} matches")
+    # Generate report for the most matched pair
+    generate_pair_report(
+        df_matches,
+        login_a=top_pair[0],
+        login_b=top_pair[1],
+        output_dir=config.output_dir,
+        generate_pdf=False, # see & download: https://wkhtmltopdf.org/downloads.html
+    )
 
 
 if __name__ == "__main__":

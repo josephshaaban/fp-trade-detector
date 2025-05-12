@@ -1,7 +1,8 @@
 pandas
 pyyaml
 matplotlib
-fpdf
+jinja2
+pdfkit
 tabulate
 
 #development
