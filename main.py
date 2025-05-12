@@ -4,6 +4,8 @@ from core import load_config, setup_logging
 from trades.loaders.loader_factory import get_loader
 from trades.risk_engine.matcher import get_strategy
 import logging
+from collections import Counter
+from pathlib import Path
 
 
 setup_logging()
@@ -34,6 +36,20 @@ def discover_datasets(df_trades, df_accounts):
     pprint(trade_report)
 
 
+def bonus_filters(strategy):
+    """
+    Add bonus filters to the strategy.
+    """
+    from trades.risk_engine.filters import (
+        filter_by_duration,
+        filter_by_lot_size,
+    )
+
+    strategy.add_preprocessor(filter_by_duration)
+    strategy.add_preprocessor(filter_by_lot_size)
+
+    return strategy
+
 def main():
     config = load_config()
     mode = config.mode
@@ -54,13 +70,84 @@ def main():
     # Run matching
     strategy = get_strategy(mode, df_trades, df_accounts)
     strategy = bonus_filters(strategy)
-    logger.debug(f"Using strategy: {strategy.__class__.__name__}")
+    logger.debug(f"Using strategy: {strategy.name}")
     df_matches = strategy.execute()
 
     # Print some data of matched trades
     logger.info(f"Matched trades DataFrame shape: {df_matches.shape}")
     logger.info(f"Categories found: {df_matches["category"].unique().tolist()}")
-    print(df_matches.head())
+
+    columns_to_display = [
+        "trading_account_login_a", "trading_account_login_b"] + [
+        col for col in df_matches.columns if col not in [
+            "trading_account_login_a", "trading_account_login_b"]]
+    print(df_matches[columns_to_display].head())
+    # print(df_matches.head())
+
+    # ============================= Test Code =============================
+    # Run matching
+    # strategy_a = get_strategy("A", df_trades, df_accounts).execute()
+    # strategy_b = get_strategy("B", df_trades, df_accounts).execute()
+
+    # # Compare column names
+    # columns_a = set(strategy_a.columns)
+    # columns_b = set(strategy_b.columns)
+
+    # only_in_a = columns_a - columns_b
+    # only_in_b = columns_b - columns_a
+
+    # logger.info(f"Columns only in strategy_a: {only_in_a}")
+    # logger.info(f"Columns only in strategy_b: {only_in_b}")
+
+    # print("Columns only in strategy_a:", only_in_a)
+    # print("Columns only in strategy_b:", only_in_b)
+
+    # login_a = 100724725
+    # login_b = 10426406
+
+    # pair_counts = Counter(zip(df_matches["trading_account_login_a"], df_matches["trading_account_login_b"]))
+    # max_pair = max(pair_counts, key=pair_counts.get)
+    # login_a, login_b = max_pair
+    # report_df = strategy.generate_account_pair_report(login_a, login_b, df_matches)
+    # print(report_df.to_markdown(index=False))
+
+    # markdown_output = report_df.to_markdown(index=False)
+    # out_dir = Path(config.output_dir)
+    # output_file_path = out_dir / f"report_{login_a}_{login_b}.md"
+    # with open(output_file_path, "w", encoding="utf-8") as f:
+    #     f.write(markdown_output)
+    # print(f"Report saved to {output_file_path}")
+
+    import pandas as pd
+    import numpy as np
+    # Combine both sides
+    accounts = pd.concat([
+        df_matches["trading_account_login_a"],
+        df_matches["trading_account_login_b"]
+    ])
+
+    # Count occurrences
+    match_counts = accounts.value_counts()
+
+    # Get the maximum value
+    max_count = match_counts.max()
+
+    # Get all accounts that have the max count (in case of tie)
+    top_accounts = match_counts[match_counts == max_count]
+
+    print("Account(s) with most matches:")
+    print(top_accounts)
+
+    pairs = pd.DataFrame({
+        "a": np.minimum(df_matches["trading_account_login_a"], df_matches["trading_account_login_b"]),
+        "b": np.maximum(df_matches["trading_account_login_a"], df_matches["trading_account_login_b"]),
+    })
+
+    pair_counts = pairs.value_counts()
+    top_pair = pair_counts.idxmax()
+    top_count = pair_counts.max()
+
+    print(f"Most matched pair: {top_pair} with {top_count} matches")
 
 
 if __name__ == "__main__":

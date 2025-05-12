@@ -1,5 +1,8 @@
 pandas
 pyyaml
+matplotlib
+fpdf
+tabulate
 
 #development
 faker
