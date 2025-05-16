@@ -41,10 +41,12 @@ def bonus_filters(strategy):
     Add bonus filters to the strategy.
     """
     from trades.risk_engine.filters import (
+        drop_unnecessary_columns,
         filter_by_duration,
         filter_by_lot_size,
     )
 
+    strategy.add_preprocessor(drop_unnecessary_columns)
     strategy.add_preprocessor(filter_by_duration)
     strategy.add_preprocessor(filter_by_lot_size)
 
@@ -61,6 +63,13 @@ def main():
     trades_loader = get_loader(config, "trades")
     df_trades = trades_loader.load()
     logger.info(f"Trade DataFrame loaded with shape: {df_trades.shape}")
+    df_trades = df_trades.drop_duplicates(subset=['identifier'])
+    logger.info(
+        f"Trade DataFrame after dropping duplicates with shape: {df_trades.shape}")
+    
+    logger.debug(
+        f"Trade {len(df_trades["symbol"].unique().tolist())} "
+        f"symobls: {df_trades["symbol"].unique().tolist().sort()}")
 
     # Load accounts data
     accounts_loader = get_loader(config, "accounts")
