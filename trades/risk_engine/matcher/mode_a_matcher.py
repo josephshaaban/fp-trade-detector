@@ -22,35 +22,53 @@ class ModeAStrategy(MatchStrategy):
         original_df = self.matched.copy()
         config = load_config()
         dt_window = config.dt_window
+        dt_window_minutes = dt_window / 60
+        batch_size_minutes = 15
         results = []
 
-        for symbol, group in self.matched.groupby("symbol"):
-            if symbol in SKIPPED_SYMBOLS:
+        df = self.matched.copy()
+        df["opened_at"] = pd.to_datetime(df["opened_at"])
+        df = df.sort_values("opened_at").reset_index(drop=True)
+
+        start_time = df["opened_at"].min()
+        end_time = df["opened_at"].max()
+
+        time_ranges = pd.date_range(
+            start=start_time, end=end_time, freq=f"{batch_size_minutes}min")
+        n_time_ranges = len(time_ranges)
+
+        for idx, window_start in enumerate(time_ranges):
+            window_end = window_start + timedelta(
+                minutes=batch_size_minutes + dt_window_minutes)
+
+            batch_df = df[
+                (df["opened_at"] >= window_start - timedelta(minutes=dt_window_minutes)) &
+                (df["opened_at"] <= window_end)
+                ].copy()
+            
+            if batch_df.empty:
                 continue
 
-            group = group.copy()
-            group["opened_at"] = pd.to_datetime(group["opened_at"])
-            group = group.sort_values("opened_at").reset_index(drop=True)
-
-            n = len(group)
-            opened_times = group["opened_at"].values
+            batch_df = batch_df.sort_values("opened_at").reset_index(drop=True)
+            opened_times = batch_df["opened_at"].values
+            n = len(batch_df)
 
             matched_rows = []
 
             for i in range(n):
                 open_time_a = opened_times[i]
-                account_a = group.at[i, "trading_account_login"]
-                id_a = group.at[i, "identifier"]
+                account_a = batch_df.at[i, "trading_account_login"]
+                id_a = batch_df.at[i, "identifier"]
 
                 t_limit = open_time_a + np.timedelta64(dt_window, "s")
                 end_idx = np.searchsorted(opened_times, t_limit, side="right")
 
                 for j in range(i + 1, end_idx):
-                    account_b = group.at[j, "trading_account_login"]
+                    account_b = batch_df.at[j, "trading_account_login"]
                     if account_a == account_b:
                         continue
 
-                    id_b = group.at[j, "identifier"]
+                    id_b = batch_df.at[j, "identifier"]
                     open_time_b = opened_times[j]
                     time_diff = (open_time_b - open_time_a) / np.timedelta64(1, "s")
 
@@ -61,7 +79,8 @@ class ModeAStrategy(MatchStrategy):
                     })
 
             if matched_rows:
-                logger.info(f"Matched {len(matched_rows)} trades for symbol {symbol}")
+                logger.info(f"Matched {len(matched_rows)} trades for window {idx + 1}"
+                            f"/{n_time_ranges} by {i} batches")
                 symbol_matches = pd.DataFrame(matched_rows)
                 symbol_matches = symbol_matches[
                     symbol_matches["identifier_a"] < symbol_matches["identifier_b"]]
