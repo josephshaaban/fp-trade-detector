@@ -17,7 +17,7 @@ from trades.risk_engine.categorize import categorize_match
 
 logger = logging.getLogger("main")
 SKIPPED_SYMBOLS = [
-    "XAUUSD",
+    # "XAUUSD",
 ]
 
 BATCHED_SYMBOLD = [
@@ -58,10 +58,11 @@ def write_results_parallel(tasks, output_file="matches.csv"):
 
 
 def match_batch_massive(args):
-    batch, idx, dt_window = args
+    batch, symbol, dt_window = args
     output_dir = "output"
     os.makedirs(output_dir, exist_ok=True)
     output_file = os.path.join(output_dir, f"matches.buf")
+    logger.debug(f"Processing symbol: {symbol} with {len(batch)} rows")
 
     dtype = [
         ("opened_at", "datetime64[ns]"),
@@ -250,58 +251,34 @@ class ModeAStrategy(MatchStrategy):
         config = load_config()
         dt_window = config.dt_window
 
-        self.matched = self.matched[~self.matched["symbol"].isin(SKIPPED_SYMBOLS)]
         tasks = []
-        idx = 0
         for symbol, group in self.matched.groupby("symbol", observed=True):
-            df = group.copy()
-            logger.debug(f"Processing symbol: {symbol} with {len(df)} rows")
+            if symbol in SKIPPED_SYMBOLS:
+                logger.warning(f"Skipping symbol: {symbol}")
+                continue
 
-            batched_symbols = set()
-            if len(df) > 25_000:
-                # batched_symbols.add(symbol)
+            df = group.copy()
+            if len(df) > 100_000:
                 logger.warning(
                     f"Symbol `{symbol}` too large ({len(df)} rows). Add to batched symbols."
                 )
 
-            if symbol not in batched_symbols:
-                tasks.append((df, f"{symbol}", dt_window))
-                continue
-
-            df["opened_at"] = pd.to_datetime(df["opened_at"])
-            df = df.sort_values("opened_at").reset_index(drop=True)
-
-            desired_batch_size = 20_000
-            step = desired_batch_size // 2
-            for i in range(0, len(df), step):
-                window_anchor = df.iloc[i : i + desired_batch_size]
-
-                window_start = window_anchor["opened_at"].min() - pd.Timedelta(
-                    seconds=dt_window
-                )
-                window_end = window_anchor["opened_at"].max() + pd.Timedelta(
-                    seconds=dt_window
-                )
-
-                batch = df[
-                    (df["opened_at"] >= window_start) & (df["opened_at"] <= window_end)
-                ]
-                if len(batch) > 25_000:
-                    logger.warning(
-                        f"Batch for {symbol} {window_start} too large ({len(batch)} rows)"
-                    )
-
-                if not batch.empty:
-                    idx += 1
-                    tasks.append((batch, f"{symbol}-{idx}", dt_window))
+            tasks.append((df, f"{symbol}", dt_window))
 
         input_dir = "output"
         matches_file = os.path.join(input_dir, f"matches.buf")
-        if not os.path.exists(matches_file):
-            logger.info("Matches file not found. Generating new matches...")
-            write_results_parallel(tasks, output_file="matches.csv")
+        is_restore = False
+        if is_restore: 
+            if not os.path.exists(matches_file):
+                logger.info("Matches file not found. Generating new matches...")
+                for task in tasks:
+                    match_batch_massive(task)
+            else:
+                logger.info(f"Using existing matches file: {matches_file}")
         else:
-            logger.info(f"Using existing matches file: {matches_file}")
+            logger.info("Generating matches in parallel...")
+            for task in tasks:
+                    match_batch_massive(task)
 
         self.matched = process_matches(matches_file, original_df)
         logger.debug(f"Matched trades DataFrame shape: {self.matched.shape}")
