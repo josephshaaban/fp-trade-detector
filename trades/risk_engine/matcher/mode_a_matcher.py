@@ -276,6 +276,11 @@ class ModeAStrategy(MatchStrategy):
             else:
                 logger.info(f"Using existing matches file: {matches_file}")
         else:
+            if os.path.exists(matches_file):
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                backup_file = f"{matches_file}.{timestamp}.bak"
+                os.rename(matches_file, backup_file)
             logger.info("Generating matches in parallel...")
             for task in tasks:
                     match_batch_massive(task)

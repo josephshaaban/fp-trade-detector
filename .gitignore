@@ -84,3 +84,4 @@ reports/*.html
 *.png
 *.pdf
 *.buf
+*.bak
