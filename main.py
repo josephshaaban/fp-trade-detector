@@ -1,9 +1,12 @@
 """FundingPips Trade Detector Entery Point Module"""
 
+import pandas as pd
+import numpy as np
 from core import load_config, setup_logging
 from trades.loaders.loader_factory import get_loader
 from trades.risk_engine.matcher import get_strategy
 import logging
+from core.constants import dtype_dict
 
 from trades.repoort import generate_pair_report
 
@@ -60,7 +63,7 @@ def main():
     logger.info(f"Output will be saved to: {config.output_dir}")
 
     # Load trades data
-    trades_loader = get_loader(config, "trades")
+    trades_loader = get_loader(config, "trades", dtype_dict)
     df_trades = trades_loader.load()
     logger.info(f"Trade DataFrame loaded with shape: {df_trades.shape}")
     df_trades = df_trades.drop_duplicates(subset=['identifier'])
@@ -92,25 +95,6 @@ def main():
             "trading_account_login_a", "trading_account_login_b"]]
     print(df_matches[columns_to_display].head())
 
-    import pandas as pd
-    import numpy as np
-    # Combine both sides
-    accounts = pd.concat([
-        df_matches["trading_account_login_a"],
-        df_matches["trading_account_login_b"]
-    ])
-
-    # Count occurrences
-    match_counts = accounts.value_counts()
-
-    # Get the maximum value
-    max_count = match_counts.max()
-
-    # Get all accounts that have the max count (in case of tie)
-    top_accounts = match_counts[match_counts == max_count]
-
-    print("Account(s) with most matches:")
-    print(top_accounts)
 
     pairs = pd.DataFrame({
         "a": np.minimum(df_matches["trading_account_login_a"], df_matches["trading_account_login_b"]),
@@ -122,6 +106,9 @@ def main():
     top_count = pair_counts.max()
 
     print(f"Most matched pair: {top_pair} with {top_count} matches")
+    df_trades.set_index('identifier', inplace=True)
+    df_matches["symbol"] = df_matches["identifier_a"].map(df_trades["symbol"])
+    df_trades.reset_index(inplace=True)
     # Generate report for the most matched pair
     generate_pair_report(
         df_matches,

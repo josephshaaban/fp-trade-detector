@@ -4,6 +4,9 @@ matplotlib
 jinja2
 pdfkit
 tabulate
+pydantic
+tqdm
+filelock
 
 #development
 faker

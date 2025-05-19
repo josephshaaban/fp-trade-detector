@@ -35,12 +35,13 @@ class MatchStrategy(ABC):
         return self.matched
 
     def _prepare_matches(self) -> None:
-        df = self.matched.copy()
+        # df = self.matched.copy()
 
-        # Categorize matches
-        df["category"] = categorize_match(df)
+        # # Categorize matches
+        # df["category"] = categorize_match(df)
 
-        self.matched = df
+        # self.matched = df
+        pass
     
     def add_preprocessor(self, processor: callable) -> None:
         self.preprocessors.append(processor)

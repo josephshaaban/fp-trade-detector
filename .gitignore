@@ -83,3 +83,4 @@ Thumbs.db
 reports/*.html
 *.png
 *.pdf
+*.buf
